@@ -1,0 +1,94 @@
+# MANDATORY
+
+# string, the name of your project. this should not contains space character because this will be used as default name formated
+# the generated ".jar" files.
+name: helloWorldProject
+# string, the version.
+version: 0.0.1.0
+# string, the initial point of a ".jar" file.
+# if your project dont have a initial point then let it as a empty string ("").
+mainClass: "helloWorld.HelloWorld"
+# string, a short description of your project.
+description: yourProjectDescription
+# string, the author name.
+author: yourName
+# string, the project url.
+url: yourUrl
+
+# practically a simple usage dont require to touch anything bellow
+# when needing to touch anything generally will be the "class-path" field to add a new class-path.
+
+# informations which are used internally by the builder.
+# this field work very similar to "variables".
+# which will be used by the builder.
+# example:
+# internal:
+#   main:
+#       src: string, the directory where '.java' files are located. will get the files recursively.
+#       compileOutput: string, the directory where the compiled code of the 'src' (main) is located.
+#       javadocOutput: string, the directory where the javadoc output will be stored.
+#       jarPath: string, the path where to save the generated jar. this path can use formated strings: "\\{anyKeyInThisDocument.SeparatedByDot.forSubKey}".
+#       jarPathWithDependencies: string, the path where to save the generated jar with dependencies, this pat can use formated strings: "\\{anyKeyInThisDocument.SeparatedByDot.forSubKey}".
+#   tests:
+#       src: string, the directory where '.java' files are located. will get the files recursively.
+#       compileOutput: string, the directory where the compiled code of the 'tests' (tests) is located.
+#       javadocOutput: string, the directory where store the javadoc output.
+internal:
+    main:
+        src: "./src"
+        compileOutput: "./srcOut/compile"
+        javadocOutput: "./srcOut/javadoc"
+        jarPath: "./srcOut/artifact/\\{name}-\\{version}.jar"
+        jarPathWithDependencies: "./srcOut/artifact/\\{name}-\\{version}-withDependencies.jar"
+    tests:
+        src: "./tests"
+        compileOutput: "./testsOut/compile"
+        javadocOutput: "./testsOut/javadoc"
+
+# class-path:
+#   main:
+#       - path: string, the path, it can end with '*', this mean 'all .jar' files in the path.
+#         compileOnly: boolean, if this path must be added to the generated artifacts.
+class-path:
+    main:
+        - path: "./src"
+        - path: "./lib"
+        - path: "./lib/*"
+    tests:
+        - path: "./tests"
+        - path: "./src"
+        - path: "./lib"
+        - path: "./lib/*"
+
+#
+# compileArgs:
+#   main:
+#       - string: string, the full string to be added to the compilation arguments. this must not contains class path.
+#
+compileArgs:
+    main:
+        - string: "-d ./srcOut/compile"
+    tests:
+        - string: "-d ./testsOut/compile"
+        
+javadocArgs:
+    main:
+        - string: "-d ./srcOut/javadoc"
+    tests:
+        - string: "-d ./testsOut/javadoc"
+        
+        
+#
+# testngArgs:
+#   # the arguments to be placed before the 'packagename.class' argument of the java command line.
+#   commandLine:
+#   # the arguments to be placed after the 'packagename.class' argument of the java command line.
+#   testng:
+#       - string: string, the thing to be added to the testng call. this must not contains class path.
+#         type: string, "javaArg" or "testngArg". if is javaArg. this mean the arg belongs to the 'java'. if testngArg the arg belongs to the testng, then will be placed as parameter of "org.testng.TestNG".
+#
+
+testngArgs:
+    tests:
+        - string: "-d ./testsOut/etc/testngOutput"
+          type: testngArg

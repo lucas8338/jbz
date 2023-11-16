@@ -1,0 +1,5 @@
+# [jbz] ignore the default directory which contains output locations.
+srcOut/
+
+# [jbz] ignore the default directory which contains tests output locations.
+testsOut/
