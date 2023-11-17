@@ -18,10 +18,13 @@ import org.testng.Assert;
 import picocli.CommandLine;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 
 @CommandLine.Command(name = "jbz", mixinStandardHelpOptions = true)
@@ -325,6 +328,19 @@ public class Cli {
 
         jc.createManifest(manifest);
 
+        // will only add the content of the 'resources' directory if there the
+        // 'resources' key in the config file.
+
+        Object resourcesConfigPath = internal.get("resources");
+
+        if ( resourcesConfigPath != null ) {
+            File resourcesDir = new File(
+                    this.root,
+                    resourcesConfigPath.toString()
+            );
+            FileUtils.copyDirectory(resourcesDir, jc.tmpdir_assembly);
+        }
+
         FormatedString fs = new FormatedString(internal.get("jarPath").toString(), this.projectDescription.projectDescription);
 
         String jarPath = fs.replace();
@@ -374,6 +390,19 @@ public class Cli {
         File compileOutputDir = new File(this.root, internal.get("compileOutput").toString());
 
         FileUtils.copyDirectory(compileOutputDir, jc.tmpdir_assembly);
+
+        // will only add the content of the 'resources' directory if there the
+        // 'resources' key in the config file.
+
+        Object resourcesConfigPath = internal.get("resources");
+
+        if ( resourcesConfigPath != null ) {
+            File resourcesDir = new File(
+                    this.root,
+                    resourcesConfigPath.toString()
+            );
+            FileUtils.copyDirectory(resourcesDir, jc.tmpdir_assembly);
+        }
 
         jc.createManifest(manifest);
 
