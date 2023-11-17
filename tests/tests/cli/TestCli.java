@@ -171,6 +171,10 @@ public class TestCli {
                 outputSave.toString().contains("hello world")
         );
 
+        Assert.assertTrue(
+                outputSave.toString().contains("the world ended in 2010.")
+        );
+
         System.setOut(defaultPrintStream);
     }
 
@@ -218,6 +222,10 @@ public class TestCli {
 
         Assert.assertTrue(
                 outputSave.toString().contains("hello world")
+        );
+
+        Assert.assertTrue(
+                outputSave.toString().contains("the world ended in 2010.")
         );
 
         System.setOut(defaultPrintStream);

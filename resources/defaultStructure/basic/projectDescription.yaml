@@ -27,6 +27,7 @@ url: yourUrl
 #       src: string, the directory where '.java' files are located. will get the files recursively.
 #       compileOutput: string, the directory where the compiled code of the 'src' (main) is located.
 #       javadocOutput: string, the directory where the javadoc output will be stored.
+#       resources: string, the directory where the resources are located. the content of this directory will be copied to the root of a jar and a jar with depencencies generated.
 #       jarPath: string, the path where to save the generated jar. this path can use formated strings: "\\{anyKeyInThisDocument.SeparatedByDot.forSubKey}".
 #       jarPathWithDependencies: string, the path where to save the generated jar with dependencies, this pat can use formated strings: "\\{anyKeyInThisDocument.SeparatedByDot.forSubKey}".
 #   tests:
@@ -38,12 +39,14 @@ internal:
         src: "./src"
         compileOutput: "./srcOut/compile"
         javadocOutput: "./srcOut/javadoc"
+        resources: "./resources"
         jarPath: "./srcOut/artifact/\\{name}-\\{version}.jar"
         jarPathWithDependencies: "./srcOut/artifact/\\{name}-\\{version}-withDependencies.jar"
     tests:
         src: "./tests"
         compileOutput: "./testsOut/compile"
         javadocOutput: "./testsOut/javadoc"
+        resources: "./testsResources"
 
 # class-path:
 #   main:
@@ -54,11 +57,13 @@ class-path:
         - path: "./src"
         - path: "./lib"
         - path: "./lib/*"
+        - path: "./resources"
     tests:
         - path: "./tests"
         - path: "./src"
         - path: "./lib"
         - path: "./lib/*"
+        - path: "./testsResources"
 
 #
 # compileArgs:
