@@ -43,6 +43,7 @@ internal:
         jarPath: "./srcOut/artifact/\\{name}-\\{version}.jar"
         jarPathWithDependencies: "./srcOut/artifact/\\{name}-\\{version}-withDependencies.jar"
     tests:
+        # to avoid problems about the 'testng' suites. only tests in the package 'tests' will be tested.
         src: "./tests"
         compileOutput: "./testsOut/compile"
         javadocOutput: "./testsOut/javadoc"

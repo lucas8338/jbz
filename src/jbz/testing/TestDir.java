@@ -26,7 +26,7 @@ public class TestDir {
                     <suite name="suite" verbose="1">
                         <test name="allPackages">
                     		<packages>
-                    			<package name=".*"/>
+                    			<package name="tests.*"/>
                     		</packages>
                         </test>
                     </suite>
