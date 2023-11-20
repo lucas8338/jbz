@@ -178,7 +178,7 @@ public class TestCli {
         System.setOut(defaultPrintStream);
     }
 
-    @Test(dependsOnMethods = "test_test")
+    @Test(dependsOnMethods = "test_jar")
     public void test_fatJar() throws IOException {
         try {
             commandLine.execute("compile");

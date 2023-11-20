@@ -21,10 +21,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
 import java.util.*;
 
 @CommandLine.Command(name = "jbz", mixinStandardHelpOptions = true)
@@ -300,46 +297,31 @@ public class Cli {
 
         JarCreator jc = new JarCreator();
 
-        List<String> classPaths = this.projectDescription.getClassPath(SubProjects_enum.valueOf(subProject)).stream()
+        List<String> classPaths_addToJarCp = this.projectDescription.getClassPath(SubProjects_enum.valueOf(subProject)).stream()
                 .filter(x -> x.containsKey("path"))
-                .map(x -> new File(this.root, x.get("path").toString()).getPath())
+                .filter(x->Boolean.parseBoolean((String) x.get("addToJarCp")) == true)
+                .map(x -> x.get("path").toString())
                 .toList();
 
-        List<File> jars = new ArrayList<File>();
+        List<String> classPaths_addToJarCp_wilHandled = this.handleReplaceWildcardsInList(classPaths_addToJarCp);
 
-        for (String string : classPaths) {
-            ClassPathStringParser parser = new ClassPathStringParser(string);
-            jars.addAll(
-                    parser.parse().stream()
-                            .filter(x -> x.getName().endsWith(".jar"))
-                            .map(x -> this.root.toPath().relativize(x.toPath()).toFile())
-                            .toList()
-            );
+        StringBuilder metafileClassPathBuilder = new StringBuilder();
+
+        for ( String path: classPaths_addToJarCp_wilHandled ){
+            // append a line break and two empty spaces to allow a lot of entries
+            // because the size of a line is limited
+            metafileClassPathBuilder.append("\n");
+            metafileClassPathBuilder.append("  ");
+            metafileClassPathBuilder.append(path.replace("\\", "/"));
         }
 
-        // generate a string compatible with the "Class-Path" jar manifest key.
-        String jarsDelimitedString = BasicUtil.listToDelimitedString(jars.stream().map(x -> x.getPath()).toList(), " ");
-
-        manifest.put("Class-Path", jarsDelimitedString);
+        manifest.put("Class-Path", metafileClassPathBuilder.toString());
 
         File compileOutputDir = new File(this.root, internal.get("compileOutput").toString());
 
         FileUtils.copyDirectory(compileOutputDir, jc.tmpdir_assembly);
 
         jc.createManifest(manifest);
-
-        // will only add the content of the 'resources' directory if there the
-        // 'resources' key in the config file.
-
-        Object resourcesConfigPath = internal.get("resources");
-
-        if ( resourcesConfigPath != null ) {
-            File resourcesDir = new File(
-                    this.root,
-                    resourcesConfigPath.toString()
-            );
-            FileUtils.copyDirectory(resourcesDir, jc.tmpdir_assembly);
-        }
 
         FormatedString fs = new FormatedString(internal.get("jarPath").toString(), this.projectDescription.projectDescription);
 
@@ -353,6 +335,41 @@ public class Cli {
         jc.createJar(jarPath_file);
     }
 
+    /**
+     * function to handle wildcards found in a list of string. will replace the
+     * strings which ends with wildcard and add beginning at that position the file paths.
+     * */
+    private List<String> handleReplaceWildcardsInList(List<String> input){
+        List<String> copyInput = new ArrayList<String>();
+        copyInput.addAll(input);
+        int index = 0;
+        while (true){
+            String value = copyInput.get(index);
+            if ( value.endsWith("*") ){
+                List<String> files_string = new ArrayList<String>();
+                ClassPathStringParser parser = new ClassPathStringParser(value);
+                files_string.addAll(parser.parse().stream()
+                        .map(x-> x.getPath())
+                        .toList()
+                );
+                copyInput.remove(index);
+                for ( int i = 0; i < files_string.size(); i++ ){
+                    copyInput.add(index + i, files_string.get(i));
+                }
+            }
+            index++;
+            if ( index >= copyInput.size() ){break;}
+        }
+        return copyInput;
+    }
+
+    /**
+     * transform all paths into relative paths with the 'root' parameter.
+     * */
+    private String relativizePathString(String path){
+        return this.root.toPath().relativize(new File(path).toPath()).toFile().getPath();
+    }
+
     @CommandLine.Command(description = "generate a '.jar' file from a project with dependencies.")
     public void fatJar(@CommandLine.Option(names = {"--subProject"}, defaultValue = "main") String subProject) throws IOException, InterruptedException {
         Logger log = this.getLogger("jar");
@@ -363,28 +380,28 @@ public class Cli {
 
         JarCreator jc = new JarCreator();
 
-        List<String> classPaths = this.projectDescription.getClassPath(SubProjects_enum.valueOf(subProject)).stream()
+        List<String> classPaths_copyC = this.projectDescription.getClassPath(SubProjects_enum.valueOf(subProject)).stream()
                 .filter(x -> x.containsKey("path"))
-                .filter(x -> !x.containsKey("compileOnly"))
-                .map(x -> new File(this.root, x.get("path").toString()).getPath())
+                .filter(x->Boolean.parseBoolean((String) x.get("copyCToJarWithDependencies")) == true)
+                // here using the java.nio Paths doesnt work, because the Files class accepts the asterisk
+                // and the Path class doest.
+                .map(x->new File(this.root.getPath(), (String) x.get("path")).getPath())
                 .toList();
 
-        List<File> jars = new ArrayList<File>();
+        List<String> classPaths_copyC_wildHandled = this.handleReplaceWildcardsInList(classPaths_copyC);
 
-        for (String string : classPaths) {
-            ClassPathStringParser parser = new ClassPathStringParser(string);
-            jars.addAll(
-                    parser.parse().stream()
-                            .filter(x -> x.getName().endsWith(".jar"))
-                            .toList()
-            );
-        }
+        List<Path> jars = new ArrayList<Path>(
+                classPaths_copyC_wildHandled.stream()
+                        .filter(x->x.endsWith(".jar"))
+                        .map(x->Paths.get(x))
+                        .toList()
+        );
 
-        for (File file : jars) {
-            File target = new File(
-                    jc.tmpdir_jar.getPath() + "/" + file.getName()
+        for (Path path : jars) {
+            Path target = Paths.get(
+                    jc.tmpdir_jar.getPath() + "/" + path.getFileName()
             );
-            Files.copy(file.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(path, target, StandardCopyOption.REPLACE_EXISTING);
         }
 
         File compileOutputDir = new File(this.root, internal.get("compileOutput").toString());

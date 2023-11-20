@@ -27,7 +27,7 @@ url: yourUrl
 #       src: string, the directory where '.java' files are located. will get the files recursively.
 #       compileOutput: string, the directory where the compiled code of the 'src' (main) is located.
 #       javadocOutput: string, the directory where the javadoc output will be stored.
-#       resources: string, the directory where the resources are located. the content of this directory will be copied to the root of a jar and a jar with depencencies generated.
+#       resources: string, the directory where the resources are located.
 #       jarPath: string, the path where to save the generated jar. this path can use formated strings: "\\{anyKeyInThisDocument.SeparatedByDot.forSubKey}".
 #       jarPathWithDependencies: string, the path where to save the generated jar with dependencies, this pat can use formated strings: "\\{anyKeyInThisDocument.SeparatedByDot.forSubKey}".
 #   tests:
@@ -52,19 +52,32 @@ internal:
 # class-path:
 #   main:
 #       - path: string, the path, it can end with '*', this mean 'all .jar' files in the path.
-#         compileOnly: boolean, if this path must be added to the generated artifacts.
+#         addToJarCp: boolean, if add the entry to the "Class-Path" key of the manifest file of a .jar file. for now wildcard will be handled by the build tool, because the .jar "Class-Path" key doesnt support the wildcard (*).
+#         copyCToJarWithDependencies: boolean, (copyContentsToJar...) if should to copy the contents of a path to the root of the generated jar. this for now will handle the wildcard (*).
 class-path:
     main:
-        - path: "./src"
-        - path: "./lib"
+        - path: "./src/"
+        - path: "./lib/"
+          addToJarCp: true
+          copyCToJarWithDependencies: true
         - path: "./lib/*"
-        - path: "./resources"
+          addToJarCp: true
+          copyCToJarWithDependencies: true
+        - path: "./resources/"
+          addToJarCp: true
+          copyCToJarWithDependencies: true
     tests:
-        - path: "./tests"
-        - path: "./src"
-        - path: "./lib"
+        - path: "./tests/"
+        - path: "./src/"
+        - path: "./lib/"
+          addToJarCp: true
+          copyCToJarWithDependencies: true
         - path: "./lib/*"
-        - path: "./testsResources"
+          addToJarCp: true
+          copyCToJarWithDependencies: true
+        - path: "./testsResources/"
+          addToJarCp: true
+          copyCToJarWithDependencies: true
 
 #
 # compileArgs:
