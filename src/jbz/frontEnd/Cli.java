@@ -10,6 +10,7 @@ import jbz.projectDescription.FormatedString;
 import jbz.projectDescription.Parser;
 import jbz.projectDescription.classPath.ClassPathStringParser;
 import jbz.projectDescription.enums.SubProjects_enum;
+import jbz.run.Run;
 import jbz.testing.TestDir;
 import jbz.util.BasicUtil;
 import org.apache.commons.collections4.ListUtils;
@@ -502,5 +503,21 @@ public class Cli {
         if (jarPathWithDependenciesFile.isFile()) {
             jarPathWithDependenciesFile.delete();
         }
+    }
+
+    @CommandLine.Command(description = "run the main class or a class.")
+    public void run(
+            @CommandLine.Option(names = {"target"}, defaultValue = "") String target
+    ) throws Exception {
+        if ( target.isEmpty() ){
+            target = (String) this.projectDescription.projectDescription.get("mainClass");
+            if ( target.equals("") ){
+                throw new Exception("the mainClass field is empty, then to run you need to provide the path to the class.");
+            }
+        }
+
+        Run runner = new Run(this.root.toPath(), target);
+
+        runner.run();
     }
 }

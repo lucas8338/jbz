@@ -259,4 +259,34 @@ public class TestCli {
         );
         Assert.assertFalse(jarPathWithDependencies.exists());
     }
+
+    @Test(dependsOnMethods = {"test_compile"})
+    public void test_run(){
+        PrintStream defaultPrintStrem = System.out;
+
+        ByteArrayOutputStream captureString = new ByteArrayOutputStream();
+
+        OutputStream sendStream = new OutputStream() {
+            @Override
+            public void write(int b) throws IOException {
+                captureString.write(b);
+            }
+        };
+
+        PrintStream capturePrintStrem = new PrintStream(sendStream);
+
+        System.setOut(capturePrintStrem);
+
+        commandLine.execute("run");
+
+        Assert.assertTrue(
+                captureString.toString().contains("hello world")
+        );
+
+        Assert.assertTrue(
+                captureString.toString().contains("the world ended in 2010.")
+        );
+
+        System.setOut(defaultPrintStrem);
+    }
 }
